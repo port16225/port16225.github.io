@@ -1,0 +1,11 @@
+<script src="sites.js"></script>
+<script>
+var sites = SITES.filter(s => addSiteCount(s) < 2)
+if (sites.length === 0) {
+	localStorage.clear()
+	sites = SITES
+}
+var site = sites[Math.floor(Math.random()*sites.length)]
+addSiteCount(site)
+location.href = decideUrl(site)
+</script>
