@@ -1,7 +1,6 @@
 <script src="sites.js"></script>
 <script>
-var sites = SITES.filter(s => addSiteCount(s) < 2)
-alert(sites.length)
+var sites = SITES.filter(s => getSiteCount(s) < 2)
 if (sites.length === 0) {
 	localStorage.clear()
 	sites = SITES
