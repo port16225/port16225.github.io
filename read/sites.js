@@ -42,9 +42,11 @@ var SITES = [
 	["OSCHINA","oschina.net",M],
 ]
 
+var isMobile = navigator.userAgent.includes("Mobile")
+
 function decideUrl(site) {
 	var url
-	if ((url = site[2]) && navigator.userAgent.includes("Mobile")) {
+	if ((url = site[2]) && isMobile) {
 		if (url === M) { url = 'https://m.' + site[1] }
 	} else if (url = site[1]) {
 		if (!url.startsWith('http')) { url = 'https://www.' + url }
