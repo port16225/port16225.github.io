@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+</head>
+<body>
+<ul id='site-list'></ul>
+</body>
+</html>
+
+<script src="sites.js"></script>
+<script>
+if (location.search === '?clear') { localStorage.clear() }
+var html = []
+SITES.forEach(function(site) {
+	html.push('<li><a href="'+decideUrl(site)+'">'+site[0]+'</a> ['+getSiteCount(site)+']</li>')
+})
+document.getElementById('site-list').innerHTML = html.join('')
+</script>
