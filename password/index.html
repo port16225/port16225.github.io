@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<link rel="icon" href="icon.png">
+<title>规则密码</title>
+
+<style>
+body {
+ display: flex;
+ justify-content: center;
+ font-family: sans-serif;
+ line-height: 1.5;
+}
+.container {
+ max-width: 540px;
+ width: 95%;
+}
+.block {
+ display: flex;
+ flex-direction: column;
+ justify-content: space-between;
+ margin: 1.6em 0;
+}
+.label-switch, .input-button {
+ display: flex;
+ justify-content: space-between;
+}
+.block > input, .block > .input-button {
+ margin-top: 0.25em;
+}
+label, button, a {
+ user-select: none;
+}
+button, a {
+ cursor: pointer;
+}
+#switchPwd {
+ margin-right: 0.5em;
+ font-weight: bold;
+ color: #28A745;
+}
+input {
+ height: 1.6em;
+ padding: 0.375em 0.75em;
+ font-size: 1.3em;
+ font-weight: bold;
+ color: #0069D9;
+ border: 1px solid #ABB2B9;
+ border-radius: 0.3em;
+}
+input::placeholder {
+ font-size: 0.8em;
+ font-weight: normal;
+ color: #ABB2B9;
+}
+input:focus {
+ border-color: #80BDFF;
+ outline: none;
+ box-shadow: 0 0 0.5em #007BFF;
+}
+#code {
+ width: 70%;
+ color: #DC143C;
+ background: #E9ECEF;
+ border-top-right-radius: 0;
+ border-bottom-right-radius: 0;
+}
+#code:focus {
+ border-color: #ABB2B9;
+ box-shadow: none;
+}
+button {
+ height: 2.45em;
+ padding: 0.375em 0.75em;
+ font-size: 1.3em;
+ font-weight: bold;
+ color: #FFF;
+ border: none;
+ border-radius: 0.3em;
+}
+button:focus {
+ outline: none;
+}
+#genCode {
+ background: #007BFF;
+ margin: 0 15%;
+}
+#genCode:hover {
+ background: #0069D9;
+}
+#copyCode {
+ width: 30%;
+ background: #DC3545;
+ border-top-left-radius: 0;
+ border-bottom-left-radius: 0;
+}
+#copyCode:hover {
+ background: #C82333;
+}
+#msg {
+ margin-top: 0.5em;
+ padding: 1em;
+ border: none;
+ border-radius: 0.15rem;
+ background-color: #FFF3CD;
+ color: #856404;
+ text-align: center;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+ <div class="block">
+  <div class="label-switch">
+   <label for="pwd">基础密码</label><a id="switchPwd">隐藏</a>
+  </div>
+  <input type="password" id="pwd" placeholder="只需记忆一次的基础密码">
+ </div>
+ <div class="block">
+  <label for="key">区别代码</label>
+  <input type="text" id="key" placeholder="不同网站和账号的区别代码">
+ </div>
+ <div class="block">
+  <button id="genCode">生成规则密码</button>
+ </div>
+ <div class="block">
+  <label for="code">规则密码</label>
+  <div class="input-button">
+   <input type="text" id="code" placeholder="计算生成的规则密码" readonly>
+   <button id="copyCode" data-clipboard-target="#code">复制</button>
+  </div>
+ </div>
+ <div class="block">
+  <div id="msg">输入基础密码和区别代码</div>
+ </div>
+</div>
+</body>
+
+<script src="md5.min.js"></script>
+<script>
+function encryptPassword(pwd,key) {
+ var h = md5(pwd,key)
+ var ha1 = md5(pwd,key+pwd+h).split("")
+ var ha2 = md5(key,pwd+key+h).split("")
+ var CHARS = [
+  "hxrozcnvmjgkpitsadbqwefuy",
+  "EDPAMFBZKOCRUYHJQXGVNTWSL",
+  "315827649",
+  "+!?&^$=*:%_@#;~"
+ ].map(g => g.split(""))
+ var char_group = []
+ var code_chars = []
+ for (var n = 0; n < 64; ++n) {
+  var cc1 = ha1[n%32].charCodeAt()
+  var cc2 = ha2[n%32].charCodeAt()
+  var gi = (cc1*cc2+n*n+pwd.length) % 4
+  var ci = (cc1+cc2+gi*gi+key.length) % CHARS[gi].length
+  char_group.push(gi)
+  code_chars.push(CHARS[gi][ci])
+  if (code_chars.length < 12) { continue }
+  if (code_chars.length > 12) {
+   char_group.shift()
+   code_chars.shift()
+  }
+  if ([0,1,2,3].every(i => char_group.includes(i))) { break }
+ }
+ return code_chars.join("")
+}
+
+var switchPwd = document.getElementById("switchPwd")
+var genCode = document.getElementById("genCode")
+var pwdInput = document.getElementById("pwd")
+var keyInput = document.getElementById("key")
+var codeInput = document.getElementById("code")
+var msgDiv = document.getElementById("msg")
+
+switchPwd.onclick = function() {
+ if (pwdInput.type === "password") {
+  pwdInput.type = "text"
+  this.innerHTML = "显示"
+  this.style.color = "#DC3545"
+ } else {
+  pwdInput.type = "password"
+  this.innerHTML = "隐藏"
+  this.style.color = "#28A745"
+ }
+}
+
+genCode.onclick = function() {
+ if (encryptPassword("A#密；","B$码。") != "!aOA7OF~RK1@") {
+  alert("加密算法测试结果异常！")
+  return
+ }
+ var pwd = pwdInput.value.trim()
+ var key = keyInput.value.trim()
+ if (pwd && key) {
+  code = encryptPassword(pwd,key)
+  codeInput.value = code
+  showMessage('已生成规则密码')
+ } else {
+  codeInput.value = ""
+  showMessage('基础密码和区别代码不得为空')
+ }
+}
+
+function showMessage(msg) {
+ msgDiv.innerHTML = msg
+}
+</script>
+
+<script src="https://cdn.staticfile.org/clipboard.js/2.0.4/clipboard.min.js"></script>
+<script>
+var copyCode = new ClipboardJS("#copyCode")
+copyCode.on('success', function(e) {
+ if (e.text) {
+  showMessage('已复制规则密码到剪贴板')
+ } else {
+  showMessage('尚未生成规则密码')
+ }
+})
+
+var queryStr = location.search.replace("?","")
+if (queryStr) {
+ pwdInput.value = decodeURIComponent(atob(queryStr.replace(/-/g,"+").replace(/_/g,"/")))
+}
+</script>
+</html>
